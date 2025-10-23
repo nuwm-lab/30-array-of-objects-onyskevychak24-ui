@@ -4,7 +4,7 @@ class Sum
 {
     private double a;
     private int n;
-//lkjlkjlkjlk
+
     // Конструктор класу
     public Sum(double a, int n)
     {
