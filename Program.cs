@@ -1,113 +1,140 @@
 using System;
 
-namespace LabWork
+namespace EquationApp
 {
-    // Клас, який моделює матеріальну точку
-    class MaterialPoint
+    // ================= Клас "Квадратне рівняння" =================
+    class QuadraticEquation
     {
-        // Поля координат і швидкості
-        private double x, y, z;
-        private double vx, vy, vz;
+        protected double b2, b1, b0;
 
-        // Конструктор
-        public MaterialPoint(double x, double y, double z, double vx, double vy, double vz)
+        // Метод задання коефіцієнтів
+        public virtual void SetCoefficients()
         {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.vx = vx;
-            this.vy = vy;
-            this.vz = vz;
+            Console.Write("Введіть коефіцієнт b2: ");
+            b2 = ReadDouble();
+            Console.Write("Введіть коефіцієнт b1: ");
+            b1 = ReadDouble();
+            Console.Write("Введіть коефіцієнт b0: ");
+            b0 = ReadDouble();
         }
 
-        // Метод: чи буде точка в першому октанті через час t
-        public bool IsInFirstOctantAfter(double t)
+        // Метод виведення коефіцієнтів
+        public virtual void ShowCoefficients()
         {
-            double newX = x + vx * t;
-            double newY = y + vy * t;
-            double newZ = z + vz * t;
-            return newX > 0 && newY > 0 && newZ > 0;
+            Console.WriteLine($"\nКоефіцієнти квадратного рівняння:");
+            Console.WriteLine($"b2 = {b2}, b1 = {b1}, b0 = {b0}");
+            Console.WriteLine($"Рівняння: {b2}x² + {b1}x + {b0} = 0");
         }
 
-        // Метод: обчислення пройденої відстані за час t
-        public double DistanceAfter(double t)
+        // Метод перевірки, чи задовольняє число x рівняння
+        public virtual bool CheckValue(double x)
         {
-            double dx = vx * t;
-            double dy = vy * t;
-            double dz = vz * t;
-            return Math.Sqrt(dx * dx + dy * dy + dz * dz);
+            double result = b2 * x * x + b1 * x + b0;
+            return Math.Abs(result) < 1e-6;
+        }
+
+        // Метод пошуку коренів квадратного рівняння
+        public void FindRoots()
+        {
+            if (Math.Abs(b2) < 1e-6)
+            {
+                Console.WriteLine("\nЦе не квадратне рівняння (b2 = 0).");
+                return;
+            }
+
+            double D = b1 * b1 - 4 * b2 * b0;
+            Console.WriteLine($"\nДискримінант D = {D:F3}");
+
+            if (D > 0)
+            {
+                double x1 = (-b1 + Math.Sqrt(D)) / (2 * b2);
+                double x2 = (-b1 - Math.Sqrt(D)) / (2 * b2);
+                Console.WriteLine($"Два корені: x1 = {x1:F3}, x2 = {x2:F3}");
+            }
+            else if (Math.Abs(D) < 1e-6)
+            {
+                double x = -b1 / (2 * b2);
+                Console.WriteLine($"Один корінь: x = {x:F3}");
+            }
+            else
+            {
+                Console.WriteLine("Дійсних коренів немає.");
+            }
+        }
+
+        // Допоміжний метод для зчитування числа
+        protected double ReadDouble()
+        {
+            while (true)
+            {
+                if (double.TryParse(Console.ReadLine(), out double val))
+                    return val;
+                Console.Write("Помилка! Введіть коректне число: ");
+            }
         }
     }
 
+    // ================= Клас "Кубічне рівняння" =================
+    class CubicEquation : QuadraticEquation
+    {
+        protected double a3, a2, a1, a0;
+
+        // Перевантажений метод задання коефіцієнтів
+        public override void SetCoefficients()
+        {
+            Console.Write("Введіть коефіцієнт a3: ");
+            a3 = ReadDouble();
+            Console.Write("Введіть коефіцієнт a2: ");
+            a2 = ReadDouble();
+            Console.Write("Введіть коефіцієнт a1: ");
+            a1 = ReadDouble();
+            Console.Write("Введіть коефіцієнт a0: ");
+            a0 = ReadDouble();
+        }
+
+        // Перевантажений метод виведення коефіцієнтів
+        public override void ShowCoefficients()
+        {
+            Console.WriteLine($"\nКоефіцієнти кубічного рівняння:");
+            Console.WriteLine($"a3 = {a3}, a2 = {a2}, a1 = {a1}, a0 = {a0}");
+            Console.WriteLine($"Рівняння: {a3}x³ + {a2}x² + {a1}x + {a0} = 0");
+        }
+
+        // Перевантажений метод перевірки, чи задовольняє число x
+        public override bool CheckValue(double x)
+        {
+            double result = a3 * x * x * x + a2 * x * x + a1 * x + a0;
+            return Math.Abs(result) < 1e-6;
+        }
+    }
+
+    // ================= Головна програма =================
     class Program
     {
         static void Main()
         {
-            Console.Write("Введіть кількість матеріальних точок: ");
-            if (!int.TryParse(Console.ReadLine(), out int m) || m <= 0)
+            Console.WriteLine("=== Квадратне рівняння ===");
+            QuadraticEquation quad = new QuadraticEquation();
+            quad.SetCoefficients();
+            quad.ShowCoefficients();
+            quad.FindRoots();
+
+            Console.WriteLine("\n=== Кубічне рівняння ===");
+            CubicEquation cubic = new CubicEquation();
+            cubic.SetCoefficients();
+            cubic.ShowCoefficients();
+
+            Console.Write("\nВведіть число x для перевірки кубічного рівняння: ");
+            double x;
+            while (!double.TryParse(Console.ReadLine(), out x))
             {
-                Console.WriteLine("Помилка: кількість має бути додатним числом.");
-                return;
+                Console.Write("Помилка! Введіть коректне число: ");
             }
 
-            MaterialPoint[] points = new MaterialPoint[m];
-            double[] distances = new double[m];
-
-            Console.Write("\nВведіть час t: ");
-            if (!double.TryParse(Console.ReadLine(), out double t))
-            {
-                Console.WriteLine("Помилка: введено некоректне значення часу.");
-                return;
-            }
-
-            // Введення даних для кожної точки
-            for (int i = 0; i < m; i++)
-            {
-                Console.WriteLine($"\nМатеріальна точка #{i + 1}:");
-
-                double x = ReadDouble("Введіть x: ");
-                double y = ReadDouble("Введіть y: ");
-                double z = ReadDouble("Введіть z: ");
-                double vx = ReadDouble("Введіть vx: ");
-                double vy = ReadDouble("Введіть vy: ");
-                double vz = ReadDouble("Введіть vz: ");
-
-                points[i] = new MaterialPoint(x, y, z, vx, vy, vz);
-                distances[i] = points[i].DistanceAfter(t);
-
-                Console.WriteLine($"Пройдена відстань за час {t}: {distances[i]:F3}");
-                Console.WriteLine(points[i].IsInFirstOctantAfter(t)
-                    ? "→ Точка буде у першому октанті."
-                    : "→ Точка не буде у першому октанті.");
-            }
-
-            // Знаходження точки з найбільшою пройденою відстанню
-            double maxDistance = distances[0];
-            int maxIndex = 0;
-            for (int i = 1; i < m; i++)
-            {
-                if (distances[i] > maxDistance)
-                {
-                    maxDistance = distances[i];
-                    maxIndex = i;
-                }
-            }
-
-            Console.WriteLine($"\nНайбільша відстань = {maxDistance:F3}");
-            Console.WriteLine($"Номер точки з найбільшою відстанню: {maxIndex + 1}");
-        }
-
-        // Безпечне зчитування double
-        static double ReadDouble(string message)
-        {
-            double value;
-            while (true)
-            {
-                Console.Write(message);
-                if (double.TryParse(Console.ReadLine(), out value))
-                    return value;
-                Console.WriteLine("Помилка: введіть коректне число.");
-            }
+            if (cubic.CheckValue(x))
+                Console.WriteLine($"Число {x} задовольняє кубічне рівняння.");
+            else
+                Console.WriteLine($"Число {x} не задовольняє кубічне рівняння.");
         }
     }
 }
